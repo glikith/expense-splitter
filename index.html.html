@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Splitter - Travel Groups</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js for graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Custom styles for the app */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--c-bg-light); 
+            color: var(--c-text-dark);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Defining the color palette in CSS variables for easy use */
+        :root {
+            /* Light Mode Colors */
+            --c-bg-light: #f7faff;
+            --c-card-light: #ffffff;
+            --c-border-light: #e5e7eb;
+            --c-text-dark: #111827;
+            --c-text-medium: #374151;
+            --c-text-light: #6b7280;
+            --c-header-bg-light: rgba(255, 255, 255, 0.8);
+            --c-hero-bg-light: #e0f2fe; /* Light blue for hero */
+            --c-hero-wave-light: white;
+            --c-input-bg-light: #f9fafb;
+            --c-button-secondary-bg-light: #f3f4f6;
+            --c-button-secondary-hover-light: #e5e7eb;
+
+            /* Dark Mode Colors */
+            --c-bg-dark: #111827;
+            --c-card-dark: #1f2937;
+            --c-border-dark: #374151;
+            --c-text-light-dark: #d1d5db;
+            --c-text-medium-dark: #9ca3af;
+            --c-text-dark-dark: #f9fafb;
+            --c-header-bg-dark: rgba(31, 41, 55, 0.8);
+            --c-hero-bg-dark: #1e3a8a; /* Dark blue for hero */
+            --c-hero-wave-dark: #1f2937;
+            --c-input-bg-dark: #374151;
+            --c-button-secondary-bg-dark: #374151;
+            --c-button-secondary-hover-dark: #4b5563;
+           
+            /* Original Blue Palette */
+            --c-lightest-blue: #add7f6;
+            --c-light-blue: #87bfff;
+            --c-primary-blue: #3f8efc;
+            --c-strong-blue: #2667ff;
+            --c-purple-blue: #7371fc; /* Kept purple for accent */
+            --c-light-grey-blue: #b9d6f2;
+
+            /* Shared Indicator Colors */
+            --c-red: #ef4444;
+            --c-green: #22c55e;
+            
+        }
+
+        /* Applying Light Mode by default */
+        body {
+           background-color: var(--c-bg-light);
+           color: var(--c-text-dark);
+        }
+        
+        /* Dark Mode Styles */
+        body.dark {
+           background-color: var(--c-bg-dark);
+           color: var(--c-text-light-dark);
+        }
+        body.dark header { background-color: var(--c-header-bg-dark); border-color: var(--c-border-dark); }
+        body.dark #home-link span { color: var(--c-text-dark-dark); }
+        body.dark #user-menu { background-color: var(--c-card-dark); --tw-ring-color: rgba(255,255,255,0.1);}
+        body.dark #user-menu div p:first-child { color: var(--c-text-medium-dark); }
+        body.dark #user-menu div p:nth-child(2) { color: var(--c-text-dark-dark); }
+        body.dark #user-menu div p:nth-child(3) { color: var(--c-text-medium-dark); }
+        body.dark #user-menu a { color: var(--c-text-light-dark); }
+        body.dark #user-menu a:hover { background-color: var(--c-button-secondary-bg-dark); }
+        body.dark #hero { background-color: var(--c-hero-bg-dark); }
+        body.dark #hero h1 { color: var(--c-text-dark-dark); }
+        body.dark #hero p { color: var(--c-text-light-dark); }
+        body.dark #hero-wave path { fill: var(--c-hero-wave-dark); }
+        body.dark h2 { color: var(--c-text-dark-dark); }
+        body.dark .card { background-color: var(--c-card-dark); border-color: var(--c-border-dark); }
+        body.dark .card h2, body.dark .card h3, body.dark .card p, body.dark .card span, body.dark .card label { color: var(--c-text-dark-dark); }
+        body.dark .card p.text-gray-500, body.dark .card span.text-gray-500, body.dark .card .text-gray-500 { color: var(--c-text-medium-dark) !important; }
+        body.dark .card li div p:nth-child(2) { color: var(--c-text-medium-dark); } /* Recent expense category */
+        body.dark table thead th { color: var(--c-text-medium-dark); }
+        body.dark table tbody td { color: var(--c-text-light-dark); }
+        body.dark table tbody tr:hover { background-color: rgba(255, 255, 255, 0.05); }
+        body.dark table tbody tr { border-color: var(--c-border-dark); }
+        body.dark #calendar-view div div div span { color: var(--c-text-dark-dark); } /* Calendar days */
+        body.dark #calendar-view div div div.bg-gray-50 { background-color: var(--c-input-bg-dark); } /* Calendar empty days */
+        body.dark #calendar-view .text-gray-500 { color: var(--c-text-medium-dark); } /* Calendar header days */
+        body.dark #trip-details-page h1 { color: var(--c-text-dark-dark); }
+        body.dark #trip-tabs .tab-link { color: var(--c-text-medium-dark); }
+        body.dark #trip-tabs .tab-link:hover { color: var(--c-text-dark-dark); border-color: var(--c-border-dark); }
+        body.dark #trip-tabs .tab-active { color: var(--c-primary-blue) !important; border-bottom-color: var(--c-primary-blue) !important; } /* Use blue for active tab */
+        body.dark .modal-content { background-color: var(--c-card-dark); border-color: var(--c-border-dark); }
+        body.dark .modal-content h2, body.dark .modal-content h3, body.dark .modal-content p, body.dark .modal-content label, body.dark .modal-content span { color: var(--c-text-dark-dark); }
+        body.dark .modal-content p.text-gray-500, body.dark .modal-content span.text-gray-500, body.dark .modal-content .text-gray-500 { color: var(--c-text-medium-dark) !important; }
+        body.dark .modal-content input, body.dark .modal-content select { background-color: var(--c-input-bg-dark); border-color: var(--c-border-dark); color: var(--c-text-dark-dark); }
+        body.dark .modal-content .bg-gray-50 { background-color: var(--c-input-bg-dark); }
+        body.dark .modal-content .text-gray-600 { color: var(--c-text-medium-dark); }
+        body.dark .modal-content .text-gray-800 { color: var(--c-text-dark-dark); }
+        body.dark .modal-content button.cancel-modal-btn { background-color: var(--c-button-secondary-bg-dark); color: var(--c-text-dark-dark); }
+        body.dark .modal-content button.cancel-modal-btn:hover { background-color: var(--c-button-secondary-hover-dark); }
+        body.dark .modal-content .bg-gray-100 { background-color: var(--c-input-bg-dark); }
+        body.dark .modal-content .text-blue-700 { color: var(--c-primary-blue); }
+        body.dark .modal-content .bg-green-100 { background-color: rgba(34, 197, 94, 0.1); }
+        body.dark .modal-content .bg-red-100 { background-color: rgba(239, 68, 68, 0.1); }
+        body.dark .modal-content .text-green-800 { color: #6ee7b7; }
+        body.dark .modal-content .text-red-800 { color: #fca5a5; }
+        body.dark footer { background-color: var(--c-card-dark); border-color: var(--c-border-dark); }
+        body.dark footer p { color: var(--c-text-medium-dark); }
+        body.dark footer p.font-bold { color: var(--c-text-light-dark); }
+        body.dark #theme-toggle-btn { color: var(--c-text-light-dark); }
+        body.dark #theme-toggle-btn:hover { background-color: var(--c-button-secondary-bg-dark); }
+        
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--c-border-light); }
+        body.dark ::-webkit-scrollbar-track { background: var(--c-border-dark); }
+        ::-webkit-scrollbar-thumb { background: #9ca3af; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+
+        /* Styling for active tabs */
+        .tab-active {
+            border-bottom-color: var(--c-primary-blue) !important; /* Reverted to blue */
+            color: var(--c-primary-blue) !important; /* Reverted to blue */
+            font-weight: 600;
+        }
+        
+        /* New card styling */
+        .card {
+            background-color: var(--c-card-light);
+            border: 1px solid var(--c-border-light);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        /* Animation for modals and page transitions */
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        .fade-out { animation: fadeOut 0.4s ease-in forwards; }
+        .modal-enter { animation: fadeIn 0.3s ease-out; }
+        .modal-exit { animation: fadeOut 0.3s ease-in; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0) scale(1); }
+            to { opacity: 0; transform: translateY(10px) scale(0.98); }
+        }
+
+        /* Hero section background */
+        #hero {
+            position: relative;
+            overflow: hidden;
+            background-color: var(--c-hero-bg-light);
+            transition: background-color 0.3s;
+        }
+        #hero-wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: auto;
+            z-index: 0;
+        }
+        #hero-wave path { transition: fill 0.3s; fill: var(--c-hero-wave-light); }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Main Application Container -->
+    <div id="app" class="min-h-screen w-full flex flex-col">
+
+        <!-- Global Header -->
+        <header class="bg-white/80 backdrop-blur-md border-b border-[var(--c-border-light)] sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <!-- Logo/Brand Name -->
+                    <a href="#" id="home-link" class="flex items-center cursor-pointer">
+                        <svg class="h-8 w-8 text-[var(--c-primary-blue)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <!-- Reverted icon color -->
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        <span class="ml-3 text-xl font-bold text-gray-800">Expense Splitter</span>
+                    </a>
+                    <!-- Right side icons -->
+                    <div class="flex items-center space-x-4">
+                         <!-- Theme Toggle Button -->
+                         <button id="theme-toggle-btn" class="p-2 rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-800 transition-colors">
+                            <svg id="theme-icon-light" class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                             <svg id="theme-icon-dark" class="w-6 h-6 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                            </svg>
+                        </button>
+                        <!-- User Profile Icon -->
+                        <div class="relative">
+                            <button id="user-menu-button" class="flex items-center justify-center h-10 w-10 rounded-full bg-[var(--c-purple-blue)] text-white font-semibold">S</button> <!-- Reverted profile icon bg -->
+                            <div id="user-menu" class="hidden origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                <div class="px-4 py-3 border-b border-[var(--c-border-light)]">
+                                    <p class="text-sm text-gray-500">Signed in as</p>
+                                    <p id="user-name" class="text-sm font-medium text-gray-900 truncate"></p>
+                                    <p id="user-email" class="text-xs text-gray-500 truncate"></p>
+                                </div>
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main id="main-content" class="flex-grow">
+            <div id="trips-page">
+                <!-- Hero Section -->
+                <div id="hero" class="py-20 sm:py-28">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+                        <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold text-[var(--c-text-dark)] tracking-tight">
+                            Split Expenses, Not Friendships.
+                        </h1>
+                        <p class="mt-6 max-w-2xl mx-auto text-lg text-[var(--c-text-light)]">
+                            The simplest way to manage group finances for your next adventure. Create a trip and start splitting bills in seconds.
+                        </p>
+                        <button id="create-trip-btn-hero" class="mt-8 bg-[var(--c-primary-blue)] hover:bg-[var(--c-strong-blue)] text-white font-bold py-3 px-6 rounded-lg transition duration-200"> <!-- Reverted hero button bg -->
+                            Create Your First Trip
+                        </button>
+                    </div>
+                    <svg id="hero-wave" viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1440 29.3333C1152 29.3333 960 100 720 100C480 100 288 29.3333 0 29.3333V120H1440V29.3333Z" fill="var(--c-hero-wave-light)" fill-opacity="0.2"/>
+                        <path d="M1440 50C1200 50 1008 100 720 100C432 100 240 50 0 50V120H1440V50Z" fill="var(--c-hero-wave-light)" fill-opacity="0.5"/>
+                        <path d="M1440 70.6667C1152 70.6667 960 100 720 100C480 100 288 70.6667 0 70.6667V120H1440V70.6667Z" fill="var(--c-hero-wave-light)"/>
+                    </svg>
+                </div>
+
+                <!-- Trip List Section -->
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                     <h2 class="text-3xl font-bold text-gray-800 mb-8">Your Trips</h2>
+                    <div id="trip-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+                </div>
+            </div>
+            <div id="trip-details-page" style="display: none;" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"></div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-white border-t border-gray-200 mt-12">
+            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-gray-500">
+                <p class="font-bold">FEDF Project - Batch 8 - Section 3</p>
+                <div class="flex justify-center space-x-6 mt-2 text-sm">
+                    <p>Likith - 2420030056</p>
+                    <p>Badri - 2420030720</p>
+                    <p>Santosh - 2420090152</p>
+                </div>
+                <div class="flex justify-center space-x-6 mt-2 text-sm">
+                    <p>KL University Hyderabad</p>
+                </div>
+                
+            </div>
+        </footer>
+    </div>
+
+    <!-- Modals Container -->
+    <div id="modal-container"></div>
+
+    <script>
+        // --- MOCK DATA ---
+        let mockData = {
+            currentUser: { id: 1, name: 'Suresh Varma', email: 'suresh.v@example.com', initials: 'S' },
+            trips: [
+                {
+                    id: 101,
+                    name: 'Andaman Escape 2025',
+                    imageUrl: 'https://images.unsplash.com/photo-1642498232612-a837df233825?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                    budget: 80000,
+                    userPersonalBudget: 25000,
+                    members: [
+                        { id: 1, name: 'Suresh Varma' }, { id: 2, name: 'Anjali Rao' },
+                        { id: 3, name: 'Ravi Teja' }, { id: 4, name: 'Lakshmi Devi' }
+                    ],
+                    expenses: [
+                        { id: 201, description: 'Flights to Port Blair', amount: 32000, category: 'Transport', paidBy: 3, date: '2025-08-15', splitWith: [1,2,3,4], settledBy: [3] },
+                        { id: 202, description: 'Resort at Havelock', amount: 25000, category: 'Accommodation', paidBy: 1, date: '2025-08-16', splitWith: [1,2,3,4], settledBy: [1] },
+                        { id: 203, description: 'Seafood Dinner', amount: 4500, category: 'Food', paidBy: 2, date: '2025-08-17', splitWith: [1,2], settledBy: [2] },
+                        { id: 204, description: 'Scuba Diving Session', amount: 9000, category: 'Activities', paidBy: 4, date: '2025-08-20', splitWith: [1,3,4], settledBy: [4] },
+                        { id: 205, description: 'Ferry to Neil Island', amount: 2200, category: 'Transport', paidBy: 1, date: '2025-08-22', splitWith: [1,2,3,4], settledBy: [1] }
+                    ]
+                },
+                {
+                    id: 102,
+                    name: 'Kerala Backwaters',
+                    imageUrl: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8a2VyYWxhfGVufDB8fDB8fHww',
+                    budget: 40000,
+                    userPersonalBudget: 20000,
+                    members: [ { id: 1, name: 'Suresh Varma' }, { id: 2, name: 'Anjali Rao' } ],
+                    expenses: [
+                        { id: 301, description: 'Houseboat Rental', amount: 15000, category: 'Accommodation', paidBy: 2, date: '2025-07-10', splitWith: [1,2], settledBy: [2] },
+                        { id: 302, description: 'Dinner at a Toddy Shop', amount: 3000, category: 'Food', paidBy: 1, date: '2025-07-11', splitWith: [1,2], settledBy: [1] },
+                        { id: 303, description: 'Kathakali Show Tickets', amount: 1500, category: 'Activities', paidBy: 1, date: '2025-07-11', splitWith: [1], settledBy: [1] },
+                    ]
+                }
+            ]
+        };
+
+        // --- GLOBAL STATE ---
+        let currentTripId = null;
+        let activeTab = 'overview';
+        let charts = {};
+        let currentTheme = localStorage.getItem('theme') || 'light';
+
+        // --- UTILITY FUNCTIONS ---
+        const formatCurrency = (amount) => `₹${amount.toLocaleString('en-IN')}`;
+        
+        const calculateInterpersonalBalance = (trip, userAId, userBId) => {
+            let balance = 0; // Positive means B owes A, negative means A owes B
+            trip.expenses.forEach(expense => {
+                const isUserAInvolved = expense.splitWith.includes(userAId);
+                const isUserBInvolved = expense.splitWith.includes(userBId);
+
+                if (!isUserAInvolved || !isUserBInvolved) return;
+
+                const share = expense.amount / expense.splitWith.length;
+                if (expense.paidBy === userAId) {
+                    balance += share;
+                }
+                if (expense.paidBy === userBId) {
+                    balance -= share;
+                }
+            });
+            return balance;
+        };
+
+        // --- DOM ELEMENTS ---
+        const bodyElement = document.body;
+        const mainContent = document.getElementById('main-content');
+        const tripsPage = document.getElementById('trips-page');
+        const tripDetailsPage = document.getElementById('trip-details-page');
+        const userMenuButton = document.getElementById('user-menu-button');
+        const userMenu = document.getElementById('user-menu');
+        const homeLink = document.getElementById('home-link');
+        const modalContainer = document.getElementById('modal-container');
+        const themeToggleButton = document.getElementById('theme-toggle-btn');
+        const themeIconLight = document.getElementById('theme-icon-light');
+        const themeIconDark = document.getElementById('theme-icon-dark');
+        
+        // --- THEME HANDLING ---
+        const applyTheme = (theme) => {
+            if (theme === 'dark') {
+                bodyElement.classList.add('dark');
+                themeIconLight.classList.add('hidden');
+                themeIconDark.classList.remove('hidden');
+            } else {
+                bodyElement.classList.remove('dark');
+                themeIconLight.classList.remove('hidden');
+                themeIconDark.classList.add('hidden');
+            }
+            // Update chart defaults for the theme
+            Chart.defaults.color = theme === 'dark' ? '#d1d5db' : '#6b7280';
+            Chart.defaults.borderColor = theme === 'dark' ? '#374151' : '#e5e7eb';
+
+            // IMPORTANT: Destroy existing charts before re-rendering with new theme colors
+             Object.values(charts).forEach(chart => {
+                 if (chart && typeof chart.destroy === 'function') {
+                    chart.destroy();
+                 }
+             });
+             charts = {}; // Clear chart references
+
+            // Re-render the currently visible tab content (which includes charts)
+            if (currentTripId && document.getElementById('trip-tab-content')) {
+                 renderTabContent(); 
+            }
+        };
+
+
+        const toggleTheme = () => {
+            currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+            localStorage.setItem('theme', currentTheme);
+            applyTheme(currentTheme);
+        };
+
+        // --- TRANSITION HELPER ---
+        const switchContent = (elementToRemove, elementToShow) => {
+            elementToRemove.classList.add('fade-out');
+            setTimeout(() => {
+                elementToRemove.style.display = 'none';
+                elementToRemove.classList.remove('fade-out');
+                elementToShow.style.display = 'block';
+                elementToShow.classList.add('fade-in');
+                requestAnimationFrame(() => {
+                    elementToShow.classList.remove('fade-in');
+                });
+            }, 300);
+        };
+
+        // --- RENDER FUNCTIONS ---
+        const renderTripList = () => {
+            const tripListContainer = document.getElementById('trip-list-container');
+            if (!tripListContainer) return; // Add check
+            tripListContainer.innerHTML = mockData.trips.map(trip => {
+                let userBalance = 0;
+                trip.members.forEach(member => {
+                    if (member.id !== mockData.currentUser.id) {
+                        userBalance += calculateInterpersonalBalance(trip, mockData.currentUser.id, member.id);
+                    }
+                });
+                const balanceColor = userBalance >= 0 ? 'text-green-600' : 'text-red-600';
+                const balanceText = userBalance >= 0 ? `You are owed ${formatCurrency(userBalance)}` : `You owe ${formatCurrency(Math.abs(userBalance))}`;
+                return `
+                    <div class="card rounded-xl cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group overflow-hidden" data-trip-id="${trip.id}">
+                        <div class="h-40 overflow-hidden"><img src="${trip.imageUrl}" alt="${trip.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.onerror=null;this.src='https://placehold.co/600x400/e0f2fe/1f2937?text=Image+Error';"></div>
+                        <div class="p-6">
+                            <h2 class="text-xl font-bold text-gray-800">${trip.name}</h2>
+                            <p class="text-sm text-gray-500 mb-4">${trip.members.length} members</p>
+                            <p class="text-lg font-semibold ${balanceColor}">${balanceText}</p>
+                        </div>
+                    </div>`;
+            }).join('');
+        };
+        
+        const renderTripDetails = (tripId) => {
+            currentTripId = tripId;
+            const trip = mockData.trips.find(t => t.id === tripId);
+            if (!trip || !tripDetailsPage) return; // Add check
+            const tabs = [ { id: 'overview', name: 'Overview' }, { id: 'expenses', name: 'Expenses' }, { id: 'analytics', name: 'Analytics' }, { id: 'my-spending', name: 'My Spending' }, { id: 'members', name: 'Members' }, { id: 'settings', name: 'Settings' }];
+            tripDetailsPage.innerHTML = `<div class="flex items-center mb-6"><button id="back-to-trips" class="text-gray-500 hover:text-gray-800 mr-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"><svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg></button><h1 class="text-4xl font-bold">${trip.name}</h1></div><div class="border-b border-[var(--c-border-light)] dark:border-[var(--c-border-dark)] mb-8"><nav id="trip-tabs" class="-mb-px flex space-x-8 overflow-x-auto" aria-label="Tabs">${tabs.map(tab => `<a href="#" data-tab="${tab.id}" class="tab-link border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600 whitespace-nowrap ${activeTab === tab.id ? 'tab-active' : ''}">${tab.name}</a>`).join('')}</nav></div><div id="trip-tab-content"></div>`;
+            renderTabContent();
+            if (tripsPage) switchContent(tripsPage, tripDetailsPage); // Check if tripsPage exists
+            const backBtn = document.getElementById('back-to-trips');
+            if (backBtn) backBtn.addEventListener('click', showHomePage);
+            const tripTabs = document.getElementById('trip-tabs');
+            if (tripTabs) tripTabs.addEventListener('click', handleTabSwitch);
+        };
+
+        const renderTabContent = () => {
+            const trip = mockData.trips.find(t => t.id === currentTripId);
+            if (!trip) return;
+            // Clear existing charts if any exist from previous renders
+             Object.values(charts).forEach(chart => {
+                 if (chart && typeof chart.destroy === 'function') {
+                    chart.destroy();
+                 }
+             });
+             charts = {}; // Reset chart references
+            
+            const contentContainer = document.getElementById('trip-tab-content');
+            if (!contentContainer) return;
+            
+            // Fade out existing content
+            contentContainer.classList.add('fade-out');
+            
+            // Wait for fade out, then render new content and fade in
+            setTimeout(() => {
+                let htmlContent = '';
+                switch(activeTab) {
+                    case 'overview': htmlContent = getOverviewHTML(trip); break;
+                    case 'expenses': htmlContent = getExpensesHTML(trip); break;
+                    case 'analytics': htmlContent = getAnalyticsHTML(trip); break;
+                    case 'my-spending': htmlContent = getMySpendingHTML(trip); break;
+                    case 'members': htmlContent = getMembersHTML(trip); break;
+                    case 'settings': htmlContent = getSettingsHTML(trip); break;
+                }
+                contentContainer.innerHTML = htmlContent;
+
+                // Render charts *after* HTML is in the DOM
+                if (activeTab === 'overview') renderOverviewCharts(trip);
+                if (activeTab === 'expenses') renderCalendar(trip);
+                if (activeTab === 'analytics') renderAnalyticsCharts(trip);
+                if (activeTab === 'my-spending') renderMySpendingCharts(trip);
+                
+                // Fade in new content
+                contentContainer.classList.remove('fade-out');
+                contentContainer.classList.add('fade-in');
+                requestAnimationFrame(() => contentContainer.classList.remove('fade-in')); // Clean up animation class
+                
+                // Re-attach event listeners for dynamic content
+                attachDynamicEventListeners(contentContainer, trip);
+
+            }, 300); // Match fade-out duration
+        };
+
+        // Helper to attach listeners to dynamic content
+        const attachDynamicEventListeners = (container, trip) => {
+             container.querySelectorAll('.add-expense-btn').forEach(btn => btn.addEventListener('click', openAddExpenseModal));
+             container.querySelectorAll('.member-item').forEach(item => item.addEventListener('click', (e) => handleMemberClick(e, trip)));
+             container.querySelectorAll('.expense-row').forEach(row => row.addEventListener('click', (e) => openExpenseDetailModal(parseInt(e.currentTarget.dataset.expenseId))));
+             container.querySelectorAll('.copy-link-btn').forEach(btn => btn.addEventListener('click', handleCopyLink));
+             if (activeTab === 'settings') {
+                 const deleteBtn = container.querySelector('#delete-trip-btn');
+                 if (deleteBtn) {
+                     deleteBtn.addEventListener('click', () => openDeleteTripConfirmationModal(currentTripId));
+                 }
+                 const saveBtn = container.querySelector('#save-settings-btn');
+                 if(saveBtn) {
+                     saveBtn.addEventListener('click', handleSaveChanges);
+                 }
+             }
+        };
+
+        // --- HTML GETTERS FOR TABS (Keep existing functions, ensure they use correct CSS vars/classes) ---
+        const getOverviewHTML = (trip) => {
+            let totalUserBalance = 0;
+            trip.members.forEach(member => { if (member.id !== mockData.currentUser.id) totalUserBalance += calculateInterpersonalBalance(trip, mockData.currentUser.id, member.id); });
+
+            // Note: Colors like text-green-600/text-red-600 are kept as they are specific indicators
+            return `
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2 card p-6 rounded-xl"><h3 class="text-lg font-semibold mb-4">Budget Overview</h3><div class="h-80 flex items-center justify-center"><canvas id="budget-chart"></canvas></div></div>
+                    <div class="lg:col-span-1 space-y-8">
+                        <div class="card p-6 rounded-xl">
+                            <div class="flex justify-between items-center mb-4"><h3 class="text-lg font-semibold">Recent Expenses</h3><button class="add-expense-btn bg-[var(--c-purple-blue)] hover:opacity-90 text-white font-bold py-2 px-3 rounded-lg text-sm flex items-center transition duration-200"><svg class="w-4 h-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg> Add</button></div>
+                            <ul class="space-y-3">${trip.expenses.slice(0, 3).map(e => `<li class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-md"><div><p class="font-medium">${e.description}</p><p class="text-xs text-gray-500 dark:text-gray-400">${e.category}</p></div><span class="font-bold text-lg">${formatCurrency(e.amount)}</span></li>`).join('') || '<p class="text-sm text-gray-500 dark:text-gray-400">No expenses yet.</p>'}</ul>
+                        </div>
+                        <div class="card p-6 rounded-xl">
+                            <h3 class="text-lg font-semibold mb-4">My Overall Balance</h3>
+                            <p class="text-3xl font-bold ${totalUserBalance >= 0 ? 'text-green-600' : 'text-red-600'}">${totalUserBalance >= 0 ? `You are owed ${formatCurrency(totalUserBalance)}` : `You owe ${formatCurrency(Math.abs(totalUserBalance))}`}</p>
+                        </div>
+                    </div>
+                </div>`;
+        };
+        
+        const getExpensesHTML = (trip) => `
+            <div class="card p-6 rounded-xl mb-8">
+                <div class="flex justify-between items-center mb-4"><h3 class="text-lg font-semibold">All Expenses</h3><button class="add-expense-btn bg-[var(--c-primary-blue)] hover:bg-[var(--c-strong-blue)] text-white font-bold py-2 px-4 rounded-lg flex items-center transition duration-200"><svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg> Add New Expense</button></div>
+                <div class="overflow-x-auto"><table class="w-full text-left"><thead class="border-b border-[var(--c-border-light)] dark:border-[var(--c-border-dark)]"><tr><th class="py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Date</th><th class="py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Description</th><th class="py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Paid By</th><th class="py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase text-right">Amount</th></tr></thead><tbody>
+                ${trip.expenses.sort((a,b) => new Date(b.date) - new Date(a.date)).map(e => `<tr class="expense-row border-b border-[var(--c-border-light)] dark:border-[var(--c-border-dark)] hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" data-expense-id="${e.id}"><td class="py-4 px-4 text-sm text-gray-600 dark:text-gray-400">${new Date(e.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</td><td class="py-4 px-4 font-medium">${e.description}</td><td class="py-4 px-4 text-sm text-gray-600 dark:text-gray-400">${trip.members.find(m => m.id === e.paidBy).name}</td><td class="py-4 px-4 font-semibold text-right">${formatCurrency(e.amount)}</td></tr>`).join('')}
+                </tbody></table></div>
+            </div><div id="calendar-view" class="card p-6 rounded-xl"></div>`; // Calendar needs theme adjustments in renderCalendar
+
+        const getAnalyticsHTML = (trip) => {
+            const totalSpent = trip.expenses.reduce((sum, e) => sum + e.amount, 0);
+            const avgExpense = trip.expenses.length ? totalSpent / trip.expenses.length : 0;
+            const expensesByDay = trip.expenses.reduce((acc, e) => { acc[e.date] = (acc[e.date] || 0) + e.amount; return acc; }, {});
+            const mostExpensiveDay = Object.keys(expensesByDay).reduce((a, b) => expensesByDay[a] > expensesByDay[b] ? a : b, '');
+            // Use blue palette for these cards
+            return `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                    <div class="card p-6 rounded-xl bg-[var(--c-primary-blue)] text-white"><h4 class="text-sm uppercase font-bold opacity-75">Total Spent</h4><p class="text-3xl font-bold">${formatCurrency(totalSpent)}</p></div>
+                    <div class="card p-6 rounded-xl bg-[var(--c-purple-blue)] text-white"><h4 class="text-sm uppercase font-bold opacity-75">Avg. Expense</h4><p class="text-3xl font-bold">${formatCurrency(avgExpense)}</p></div>
+                    <div class="card p-6 rounded-xl bg-[var(--c-strong-blue)] text-white"><h4 class="text-sm uppercase font-bold opacity-75">Busiest Day</h4><p class="text-3xl font-bold">${mostExpensiveDay ? new Date(mostExpensiveDay).toLocaleDateString('en-GB', {day:'numeric', month:'short'}) : 'N/A'}</p></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="card p-6 rounded-xl"><h3 class="text-lg font-semibold mb-4">Spending by Category</h3><div class="h-80"><canvas id="category-chart"></canvas></div></div>
+                    <div class="card p-6 rounded-xl"><h3 class="text-lg font-semibold mb-4">Contributions per Person</h3><div class="h-80"><canvas id="member-spending-chart"></canvas></div></div>
+                </div>`;
+        };
+
+        const getMySpendingHTML = (trip) => `
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1 card p-6 rounded-xl"><h3 class="text-lg font-semibold mb-4">Personal Budget</h3><div class="h-80 flex items-center justify-center"><canvas id="my-budget-chart"></canvas></div></div>
+                <div class="lg:col-span-2 card p-6 rounded-xl"><h3 class="text-lg font-semibold mb-4">My Spending by Category</h3><div class="h-80 flex items-center justify-center"><canvas id="my-category-chart"></canvas></div></div>
+                <div class="lg:col-span-3 card p-6 rounded-xl"><h3 class="text-lg font-semibold mb-4">My Expenses</h3><ul class="space-y-2 max-h-60 overflow-y-auto">${trip.expenses.filter(e => e.paidBy === mockData.currentUser.id).map(e => `<li class="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-700 rounded-md"><span>${e.description}</span><span class="font-semibold">${formatCurrency(e.amount)}</span></li>`).join('') || '<li class="text-gray-500 dark:text-gray-400">You haven\'t added any expenses yet.</li>'}</ul></div>
+            </div>`;
+
+        const getMembersHTML = (trip) => `
+            <div class="card p-6 rounded-xl">
+                <div class="flex justify-between items-center mb-4"><h3 class="text-lg font-semibold">Trip Members (${trip.members.length})</h3><button class="copy-link-btn bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold py-2 px-4 rounded-lg flex items-center transition-colors hover:bg-gray-200 dark:hover:bg-gray-600 text-sm"><svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg> <span>Invite</span></button></div>
+                <ul class="divide-y divide-[var(--c-border-light)] dark:divide-[var(--c-border-dark)]">${trip.members.map(member => {
+                    if (member.id === mockData.currentUser.id) return `<li class="py-4 flex justify-between items-center"><div><p class="font-medium">${member.name}</p><span class="text-sm text-gray-500 dark:text-gray-400">This is you</span></div></li>`;
+                    const balance = calculateInterpersonalBalance(trip, mockData.currentUser.id, member.id);
+                    // Keep red/green for balance text
+                    const balanceText = balance > 0 ? `<span class="text-sm text-green-600">${member.name} owes you ${formatCurrency(balance)}</span>` : (balance < 0 ? `<span class="text-sm text-red-600">You owe ${member.name} ${formatCurrency(Math.abs(balance))}</span>` : `<span class="text-sm text-gray-500 dark:text-gray-400">Settled up</span>`);
+                    return `<li data-member-id="${member.id}" class="member-item py-4 flex justify-between items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 px-2 rounded-md transition-colors"><div><p class="font-medium">${member.name}</p>${balanceText}</div><svg class="w-5 h-5 text-gray-400 dark:text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg></li>`;
+                }).join('')}</ul>
+            </div>`;
+
+        const getSettingsHTML = (trip) => `
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="card p-6 rounded-xl"><h3 class="text-lg font-semibold mb-4">Trip Details</h3><div class="space-y-4"><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Trip Name</label><input id="trip-name-input" type="text" value="${trip.name}" class="mt-1 block w-full bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md py-2 px-3"></div><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Group Budget</label><input id="trip-budget-input" type="number" value="${trip.budget}" class="mt-1 block w-full bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md py-2 px-3"></div><button id="save-settings-btn" class="bg-[var(--c-primary-blue)] hover:bg-[var(--c-strong-blue)] text-white font-bold py-2 px-4 rounded-lg w-full transition-colors">Save Changes</button></div></div>
+                <div class="card p-6 rounded-xl border border-red-300 dark:border-red-500/50"><h3 class="text-lg font-semibold text-red-700 dark:text-red-400 mb-2">Danger Zone</h3><p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Deleting a trip is permanent and cannot be undone.</p><button id="delete-trip-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg w-full transition-colors">Delete This Trip</button></div>
+            </div>`;
+
+
+        // --- CHART RENDERING (Adjust colors based on theme) ---
+        const renderOverviewCharts = (trip) => {
+            const totalSpent = trip.expenses.reduce((sum, e) => sum + e.amount, 0);
+            const budgetCtx = document.getElementById('budget-chart')?.getContext('2d'); // Add null check
+            if (!budgetCtx) return; // Exit if canvas not found
+            
+            const spentColor = totalSpent > trip.budget ? '#ef4444' : '#22c55e';
+            const remainingColor = currentTheme === 'dark' ? '#374151' : '#e5e7eb'; // Use theme-appropriate background
+            
+            charts.budget = new Chart(budgetCtx, {
+                type: 'doughnut', 
+                data: { datasets: [{ data: [totalSpent, Math.max(0, trip.budget - totalSpent)], backgroundColor: [spentColor, remainingColor], borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { display: false }, tooltip: { enabled: false } } }
+            });
+            // Ensure plugin is registered *before* chart creation or update if needed globally
+            // Chart.register({...}) // Can be done once at init
+        };
+        
+        // Central text plugin definition (register once)
+        const doughnutTextPlugin = {
+             id: 'doughnutText',
+             beforeDraw: (chart) => {
+                 if (chart.canvas.id !== 'budget-chart' && chart.canvas.id !== 'my-budget-chart') return;
+                 const {width, height, ctx} = chart;
+                 ctx.restore();
+                 const text = formatCurrency(chart.data.datasets[0].data[0]);
+                 const textColor = currentTheme === 'dark' ? '#f9fafb' : '#111827';
+                 const subTextColor = currentTheme === 'dark' ? '#9ca3af' : '#6b7280';
+                 
+                 ctx.font = `bold ${(height / 120).toFixed(2)}em Inter`;
+                 ctx.textBaseline = 'middle';
+                 ctx.fillStyle = textColor;
+                 ctx.fillText(text, (width - ctx.measureText(text).width) / 2, height / 2 - 15); // Adjusted Y position
+                 const subText = chart.canvas.id === 'budget-chart' ? 'Total Spent' : 'You Spent';
+                 ctx.font = `${(height / 220).toFixed(2)}em Inter`;
+                 ctx.fillStyle = subTextColor;
+                 ctx.fillText(subText, (width - ctx.measureText(subText).width) / 2, height / 2 + 15); // Adjusted Y position
+                 ctx.save();
+             }
+        };
+        // Register the plugin globally if not already done
+        if (!Chart.registry.plugins.get('doughnutText')) {
+            Chart.register(doughnutTextPlugin);
+        }
+
+
+        const renderAnalyticsCharts = (trip) => {
+            const categorySpending = trip.expenses.reduce((acc, e) => { acc[e.category] = (acc[e.category] || 0) + e.amount; return acc; }, {});
+            const memberSpending = trip.members.map(member => ({ name: member.name, amount: trip.expenses.filter(e => e.paidBy === member.id).reduce((sum, e) => sum + e.amount, 0) }));
+            const colors = ['#3f8efc', '#7371fc', '#87bfff', '#add7f6', '#b9d6f2', '#2667ff']; // Reverted to blue palette
+            const legendColor = currentTheme === 'dark' ? '#d1d5db' : '#1f2937';
+            const borderColor = currentTheme === 'dark' ? '#1f2937' : '#fff'; // Darker border for dark mode
+
+            const categoryCtx = document.getElementById('category-chart')?.getContext('2d');
+            if(categoryCtx) charts.category = new Chart(categoryCtx, { type: 'doughnut', data: { labels: Object.keys(categorySpending), datasets: [{ data: Object.values(categorySpending), backgroundColor: colors, borderColor: borderColor }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: legendColor } } } } });
+            
+            const memberCtx = document.getElementById('member-spending-chart')?.getContext('2d');
+            if(memberCtx) charts.memberSpending = new Chart(memberCtx, { type: 'pie', data: { labels: memberSpending.map(m => m.name), datasets: [{ data: memberSpending.map(m => m.amount), backgroundColor: colors, borderColor: borderColor }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: legendColor } } } } });
+        };
+
+        const renderMySpendingCharts = (trip) => {
+            const myExpenses = trip.expenses.filter(e => e.paidBy === mockData.currentUser.id);
+            const myTotalSpent = myExpenses.reduce((sum, e) => sum + e.amount, 0);
+            const myCategorySpending = myExpenses.reduce((acc, e) => { acc[e.category] = (acc[e.category] || 0) + e.amount; return acc; }, {});
+            const colors = ['#7371fc', '#3f8efc', '#87bfff', '#add7f6']; // Reverted to blue/purple palette
+             const gridColor = currentTheme === 'dark' ? '#374151' : '#e5e7eb';
+            const tickColor = currentTheme === 'dark' ? '#9ca3af' : '#6b7280';
+            const remainingColor = currentTheme === 'dark' ? '#374151' : '#e5e7eb';
+
+            const myBudgetCtx = document.getElementById('my-budget-chart')?.getContext('2d');
+            if(myBudgetCtx) charts.myBudget = new Chart(myBudgetCtx, { type: 'doughnut', data: { datasets: [{ data: [myTotalSpent, Math.max(0, trip.userPersonalBudget - myTotalSpent)], backgroundColor: [colors[0], remainingColor], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { display: false }, tooltip: { enabled: false } } } });
+            
+            const myCategoryCtx = document.getElementById('my-category-chart')?.getContext('2d');
+            if(myCategoryCtx) charts.myCategory = new Chart(myCategoryCtx, { type: 'bar', data: { labels: Object.keys(myCategorySpending), datasets: [{ label: 'Spent', data: Object.values(myCategorySpending), backgroundColor: colors[0] }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { color: tickColor }, grid: { color: gridColor } }, x: { ticks: { color: tickColor }, grid: { display: false } } }, plugins: { legend: { display: false } } } });
+        };
+        
+        const renderCalendar = (trip) => {
+            const calendarContainer = document.getElementById('calendar-view');
+            if (!calendarContainer) return; // Add check
+            const expensesByDate = trip.expenses.reduce((acc, expense) => { const date = new Date(expense.date).toISOString().split('T')[0]; if (!acc[date]) acc[date] = []; acc[date].push(expense); return acc; }, {});
+            const today = new Date(); const month = today.getMonth(); const year = today.getFullYear(); const daysInMonth = new Date(year, month + 1, 0).getDate(); const firstDayOfMonth = new Date(year, month, 1).getDay();
+            const headerColor = currentTheme === 'dark' ? 'text-gray-400' : 'text-gray-500';
+            const dayBg = currentTheme === 'dark' ? 'bg-gray-700' : 'bg-gray-50';
+            const expenseDayBg = 'bg-[var(--c-primary-blue)] text-white'; // Use blue for expense days
+            
+            let calendarHTML = `<h3 class="text-lg font-semibold mb-4">${today.toLocaleString('default', { month: 'long' })} ${year}</h3><div class="grid grid-cols-7 gap-1 text-center text-xs ${headerColor} mb-2"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div><div class="grid grid-cols-7 gap-2">`;
+            for (let i = 0; i < firstDayOfMonth; i++) calendarHTML += `<div></div>`;
+            for (let day = 1; day <= daysInMonth; day++) { const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`; const hasExpense = expensesByDate[dateStr]; calendarHTML += `<div class="p-2 h-16 rounded-md ${hasExpense ? expenseDayBg : dayBg} flex flex-col items-start"><span class="font-bold">${day}</span>${hasExpense ? `<span class="text-xs mt-1">${expensesByDate[dateStr].length} items</span>` : ''}</div>`; }
+            calendarHTML += `</div>`; calendarContainer.innerHTML = calendarHTML;
+        };
+
+        // --- MODAL HANDLING (Ensure styles adapt) ---
+        const openModal = (content, maxWidth = 'max-w-lg') => {
+            // Add dark mode class propagation if needed inside modal content
+            modalContainer.innerHTML = `<div class="modal-backdrop fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4"><div class="modal-content card rounded-xl shadow-2xl w-full ${maxWidth} p-6 sm:p-8 m-4 modal-enter max-h-[90vh] overflow-y-auto">${content}</div></div>`;
+            modalContainer.querySelector('.modal-backdrop').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeModal(); });
+            modalContainer.querySelectorAll('.close-modal-btn').forEach(btn => btn.addEventListener('click', closeModal));
+            modalContainer.querySelectorAll('.cancel-modal-btn').forEach(btn => btn.addEventListener('click', closeModal));
+        };
+        const closeModal = () => { const modalContent = modalContainer.querySelector('.modal-content'); if(modalContent) { modalContent.classList.remove('modal-enter'); modalContent.classList.add('modal-exit'); setTimeout(() => { modalContainer.innerHTML = ''; }, 300); } };
+
+        const openAddExpenseModal = () => {
+             const trip = mockData.trips.find(t => t.id === currentTripId);
+             const content = `
+                 <div class="flex justify-between items-center mb-6"><h2 class="text-2xl font-bold">Add New Expense</h2><button class="close-modal-btn text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl leading-none">&times;</button></div>
+                 <form id="add-expense-form"><div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                     <div class="md:col-span-2 space-y-4">
+                         <div><label class="block text-sm font-medium mb-1">Description</label><input type="text" name="description" placeholder="e.g., Dinner at the beach" class="mt-1 block w-full rounded-md py-2 px-3 border"></div>
+                         <div><label class="block text-sm font-medium mb-1">Amount</label><input type="number" step="0.01" name="amount" placeholder="1250.00" class="mt-1 block w-full rounded-md py-2 px-3 border"></div>
+                         <div><label class="block text-sm font-medium mb-1">Paid By</label><select name="paidBy" class="mt-1 block w-full rounded-md py-2 px-3 border">${trip.members.map(m => `<option value="${m.id}">${m.name}</option>`).join('')}</select></div>
+                     </div>
+                     <div class="md:col-span-1 space-y-4">
+                          <div><label class="block text-sm font-medium mb-1">Split Method</label><select id="split-method-select" class="mt-1 block w-full rounded-md py-2 px-3 border"><option value="equally">Equally</option><option value="exact">Exact</option><option value="percentage">Percentage</option></select></div>
+                          <div id="split-options-container" class="space-y-2 max-h-40 overflow-y-auto pr-2"></div>
+                     </div>
+                 </div><div class="mt-8 flex justify-end space-x-3"><button type="button" class="cancel-modal-btn bg-[var(--c-button-secondary-bg-light)] dark:bg-[var(--c-button-secondary-bg-dark)] hover:bg-[var(--c-button-secondary-hover-light)] dark:hover:bg-[var(--c-button-secondary-hover-dark)] font-bold py-2 px-4 rounded-lg">Cancel</button><button type="submit" class="bg-[var(--c-primary-blue)] hover:bg-[var(--c-strong-blue)] text-white font-bold py-2 px-4 rounded-lg">Add Expense</button></div></form>`; // Reverted Add Expense btn color
+             openModal(content, 'max-w-3xl');
+             const splitSelect = document.getElementById('split-method-select');
+             renderSplitOptions(splitSelect.value); // Initial render
+             if(splitSelect) splitSelect.addEventListener('change', (e) => renderSplitOptions(e.target.value));
+             const form = document.getElementById('add-expense-form');
+             if(form) form.addEventListener('submit', handleAddExpense);
+        };
+        
+        const renderSplitOptions = (method) => {
+            const container = document.getElementById('split-options-container');
+            if(!container) return; // Add check
+            const trip = mockData.trips.find(t => t.id === currentTripId);
+            let optionsHTML = '';
+            const itemBg = currentTheme === 'dark' ? 'bg-gray-700' : 'bg-gray-50';
+            const inputBg = currentTheme === 'dark' ? 'bg-gray-600' : 'bg-white';
+            
+            switch (method) {
+                case 'equally':
+                    optionsHTML = trip.members.map(m => `<label class="flex items-center space-x-3 p-2 ${itemBg} rounded-md"><input type="checkbox" checked class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-[var(--c-primary-blue)] focus:ring-[var(--c-primary-blue)]"><span class="ml-2">${m.name}</span></label>`).join(''); // Reverted checkbox color
+                    break;
+                case 'exact':
+                    optionsHTML = trip.members.map(m => `<div class="flex items-center justify-between p-2 ${itemBg} rounded-md"><label>${m.name}</label><input type="number" step="0.01" placeholder="0.00" class="w-24 ${inputBg} border border-gray-300 dark:border-gray-600 rounded-md py-1 px-2 text-right"></div>`).join('') + `<div id="exact-total" class="text-right text-sm text-gray-500 dark:text-gray-400 mt-2">Total: ₹0.00</div>`;
+                    break;
+                case 'percentage':
+                    optionsHTML = trip.members.map(m => `<div class="flex items-center justify-between p-2 ${itemBg} rounded-md"><label>${m.name}</label><div class="flex items-center"><input type="number" placeholder="0" class="w-20 ${inputBg} border border-gray-300 dark:border-gray-600 rounded-md py-1 px-2 text-right"><span class="ml-2 text-gray-500 dark:text-gray-400">%</span></div></div>`).join('') + `<div id="percentage-total" class="text-right text-sm text-gray-500 dark:text-gray-400 mt-2">Total: 0%</div>`;
+                    break;
+            }
+            container.innerHTML = optionsHTML;
+        };
+        
+        const openExpenseDetailModal = (expenseId) => {
+             const trip = mockData.trips.find(t => t.id === currentTripId);
+             const expense = trip.expenses.find(e => e.id === expenseId);
+             if(!expense) return; // Add check
+             const payer = trip.members.find(m => m.id === expense.paidBy);
+             const share = expense.amount / expense.splitWith.length;
+             const itemBg = currentTheme === 'dark' ? 'bg-gray-700' : 'bg-gray-50';
+
+             const content = `
+                 <div class="flex justify-between items-center mb-4"><h2 class="text-2xl font-bold">${expense.description}</h2><button class="close-modal-btn text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl leading-none">&times;</button></div>
+                 <div class="mb-4 p-3 ${itemBg} rounded-md flex justify-between items-center">
+                     <span class="text-gray-600 dark:text-gray-400">Paid by <span class="font-bold">${payer.name}</span></span>
+                     <span class="text-2xl font-bold">${formatCurrency(expense.amount)}</span>
+                 </div>
+                 <h3 class="text-lg font-semibold mb-2">Settlement Status</h3>
+                 <ul class="space-y-2">
+                 ${trip.members.filter(m => expense.splitWith.includes(m.id)).map(member => {
+                     const isSettled = expense.settledBy.includes(member.id);
+                     return `<li class="flex justify-between items-center p-2 ${itemBg} rounded-md">
+                         <span>${member.name}</span>
+                         ${isSettled ? `<span class="text-xs font-bold py-1 px-2 rounded-full bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300">PAID ${formatCurrency(share)}</span>` : `<span class="text-xs font-bold py-1 px-2 rounded-full bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-300">OWES ${formatCurrency(share)}</span>`}
+                     </li>`;
+                 }).join('')}
+                 </ul>
+                 <div class="mt-6 border-t border-[var(--c-border-light)] dark:border-[var(--c-border-dark)] pt-4">
+                     <button id="delete-expense-btn" data-expense-id="${expenseId}" class="w-full text-sm text-red-600 hover:text-red-800 dark:hover:text-red-400 font-semibold flex items-center justify-center p-2 rounded-md hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
+                         <svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                         Delete Expense
+                     </button>
+                 </div>`;
+             openModal(content);
+             const delBtn = document.getElementById('delete-expense-btn');
+             if (delBtn) delBtn.addEventListener('click', (e) => openDeleteConfirmationModal(parseInt(e.currentTarget.dataset.expenseId)));
+        };
+
+        const openDeleteConfirmationModal = (expenseId) => {
+             const content = `
+                 <div class="text-center">
+                     <h3 class="text-lg font-medium">Are you sure?</h3>
+                     <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">This action cannot be undone. The expense will be permanently deleted.</p>
+                     <div class="mt-6 flex justify-center space-x-4">
+                         <button class="cancel-modal-btn bg-[var(--c-button-secondary-bg-light)] dark:bg-[var(--c-button-secondary-bg-dark)] hover:bg-[var(--c-button-secondary-hover-light)] dark:hover:bg-[var(--c-button-secondary-hover-dark)] font-bold py-2 px-4 rounded-lg">Cancel</button>
+                         <button id="confirm-delete-btn" data-expense-id="${expenseId}" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Delete</button>
+                     </div>
+                 </div>`;
+             openModal(content, 'max-w-sm');
+             const confirmBtn = document.getElementById('confirm-delete-btn');
+             if(confirmBtn) confirmBtn.addEventListener('click', (e) => handleDeleteExpense(parseInt(e.currentTarget.dataset.expenseId)));
+        };
+
+        const openCreateTripModal = () => {
+             const content = `
+                 <div class="flex justify-between items-center mb-6"><h2 class="text-2xl font-bold">Create New Trip</h2><button class="close-modal-btn text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl leading-none">&times;</button></div>
+                 <form id="create-trip-form"><div class="space-y-4">
+                     <div><label class="block text-sm font-medium mb-1">Trip Name</label><input type="text" name="name" placeholder="e.g., Himalayan Trek" class="mt-1 block w-full rounded-md py-2 px-3 border"></div>
+                     <div><label class="block text-sm font-medium mb-1">Group Budget (Optional)</label><input type="number" name="budget" placeholder="50000" class="mt-1 block w-full rounded-md py-2 px-3 border"></div>
+                 </div><div class="mt-8 flex justify-end space-x-3"><button type="button" class="cancel-modal-btn bg-[var(--c-button-secondary-bg-light)] dark:bg-[var(--c-button-secondary-bg-dark)] hover:bg-[var(--c-button-secondary-hover-light)] dark:hover:bg-[var(--c-button-secondary-hover-dark)] font-bold py-2 px-4 rounded-lg">Cancel</button><button type="submit" class="bg-[var(--c-primary-blue)] hover:bg-[var(--c-strong-blue)] text-white font-bold py-2 px-4 rounded-lg">Create Trip</button></div></form>`; // Reverted Create Trip btn color
+             openModal(content);
+             const form = document.getElementById('create-trip-form');
+             if(form) form.addEventListener('submit', handleCreateTrip);
+        };
+        
+        const showTripCreatedModal = () => {
+              const content = `<div class="text-center"><div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 dark:bg-green-900/50"><svg class="h-6 w-6 text-green-600 dark:text-green-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg></div><h3 class="mt-3 text-lg leading-6 font-medium">Trip Created!</h3><p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Share this link to invite people to your trip.</p><div class="mt-4 flex items-center"><input readonly value="https://expensesplitter.app/join/aB3xZ9pQ" class="w-full p-2 bg-gray-100 dark:bg-gray-700 rounded-l-md text-sm text-blue-700 dark:text-blue-400 border border-gray-300 dark:border-gray-600"><button class="copy-link-btn p-2 bg-[var(--c-primary-blue)] rounded-r-md text-white"><span>Copy</span></button></div><button class="close-modal-btn mt-6 w-full bg-[var(--c-button-secondary-bg-light)] dark:bg-[var(--c-button-secondary-bg-dark)] hover:bg-[var(--c-button-secondary-hover-light)] dark:hover:bg-[var(--c-button-secondary-hover-dark)] font-bold py-2 px-4 rounded-lg">Done</button></div>`; // Reverted copy btn color
+             openModal(content);
+             const copyBtn = modalContainer.querySelector('.copy-link-btn');
+             if(copyBtn) copyBtn.addEventListener('click', handleCopyLink);
+        };
+
+        const handleMemberClick = (e, trip) => {
+             const memberId = parseInt(e.currentTarget.dataset.memberId);
+             if (!memberId || memberId === mockData.currentUser.id) return;
+             const member = trip.members.find(m => m.id === memberId);
+             if(!member) return;
+             const balance = calculateInterpersonalBalance(trip, mockData.currentUser.id, member.id);
+             const balanceText = balance > 0 ? `<span class="font-bold text-green-600">${member.name} owes you ${formatCurrency(balance)}</span>` : (balance < 0 ? `<span class="font-bold text-red-600">You owe ${member.name} ${formatCurrency(Math.abs(balance))}</span>` : `<span class="font-bold text-gray-500 dark:text-gray-400">You are settled up</span>`);
+             const memberExpenses = trip.expenses.filter(ex => ex.paidBy === memberId);
+             const itemBg = currentTheme === 'dark' ? 'bg-gray-700' : 'bg-gray-50';
+             const subItemBg = currentTheme === 'dark' ? 'bg-gray-600' : 'bg-gray-100';
+
+             const content = `
+                 <div class="flex justify-between items-center mb-6"><h2 class="text-2xl font-bold">${member.name}'s Details</h2><button class="close-modal-btn text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl leading-none">&times;</button></div>
+                 <div class="mb-4 p-3 ${itemBg} rounded-md text-center">${balanceText}</div>
+                 <h3 class="text-lg font-semibold mb-2">Expenses Paid By ${member.name}</h3>
+                 <ul class="space-y-2 max-h-60 overflow-y-auto pr-2">${memberExpenses.length > 0 ? memberExpenses.map(ex => `<li class="flex justify-between items-center p-2 ${subItemBg} rounded-md"><div><p>${ex.description}</p><p class="text-xs text-gray-500 dark:text-gray-400">${new Date(ex.date).toLocaleDateString()}</p></div><span class="font-semibold">${formatCurrency(ex.amount)}</span></li>`).join('') : '<li class="text-gray-500 dark:text-gray-400 text-center p-4">No expenses added yet.</li>'}</ul>`;
+             openModal(content);
+        };
+
+
+        // --- EVENT HANDLERS ---
+        const showHomePage = () => { if (tripDetailsPage && tripsPage) { switchContent(tripDetailsPage, tripsPage); currentTripId = null; } };
+        const handleTabSwitch = (e) => { e.preventDefault(); const link = e.target.closest('.tab-link'); if (link && link.dataset.tab !== activeTab) { activeTab = link.dataset.tab; document.querySelectorAll('#trip-tabs .tab-link').forEach(t => t.classList.remove('tab-active')); link.classList.add('tab-active'); renderTabContent(); } };
+        
+        const handleCopyLink = (e) => {
+             const button = e.currentTarget;
+             // Find the input field relative to the button
+             let inputField = button.previousElementSibling;
+             // If used in Members tab, there's no input field, use default link
+             const textToCopy = inputField && inputField.tagName === 'INPUT' ? inputField.value : "https://expensesplitter.app/join/aB3xZ9pQ"; 
+             
+             navigator.clipboard.writeText(textToCopy).then(() => {
+                 const span = button.querySelector('span');
+                 if(span) {
+                     const originalText = span.textContent;
+                     span.textContent = 'Copied!';
+                     button.classList.add('bg-green-500', 'dark:bg-green-600', 'text-white'); // Feedback style
+                     setTimeout(() => { 
+                         span.textContent = originalText; 
+                         button.classList.remove('bg-green-500', 'dark:bg-green-600', 'text-white'); // Remove feedback style
+                     }, 2000);
+                 }
+             }).catch(err => {
+                 console.error('Failed to copy text: ', err);
+                 // Optionally show an error message to the user
+             });
+        };
+        
+        const handleCreateTrip = (e) => {
+             e.preventDefault();
+             const formData = new FormData(e.target);
+             const newTrip = {
+                 id: Date.now(),
+                 name: formData.get('name') || 'New Trip',
+                 imageUrl: `https://placehold.co/600x400/${currentTheme === 'dark' ? '1f2937' : 'e0f2fe'}/${currentTheme === 'dark' ? 'FFFFFF' : '111827'}?text=New+Trip`, // Theme-aware placeholder
+                 budget: parseInt(formData.get('budget')) || 0,
+                 userPersonalBudget: 0,
+                 members: [mockData.currentUser],
+                 expenses: []
+             };
+             mockData.trips.push(newTrip);
+             renderTripList(); // Update home page list
+             closeModal(); // Close create modal first
+             setTimeout(showTripCreatedModal, 350); // Show success after close animation
+        };
+
+        const handleAddExpense = (e) => {
+             e.preventDefault();
+             const formData = new FormData(e.target);
+             const newExpense = {
+                 id: Date.now(),
+                 description: formData.get('description') || 'New Expense',
+                 amount: parseFloat(formData.get('amount')) || 0,
+                 category: 'Other', // Add category selection later if needed
+                 paidBy: parseInt(formData.get('paidBy')),
+                 date: new Date().toISOString().split('T')[0],
+                 // Basic split for now, implement advanced later
+                 splitWith: mockData.trips.find(t=>t.id===currentTripId)?.members.map(m=>m.id) || [], 
+                 settledBy: [parseInt(formData.get('paidBy'))] // Initially only payer is settled
+             };
+             const trip = mockData.trips.find(t => t.id === currentTripId);
+             if(trip) {
+                 trip.expenses.push(newExpense);
+                 closeModal();
+                 // Re-render the current tab to show the new expense
+                 renderTabContent(); 
+             }
+        };
+
+        const handleDeleteExpense = (expenseId) => {
+             const trip = mockData.trips.find(t => t.id === currentTripId);
+             if (trip) {
+                 trip.expenses = trip.expenses.filter(e => e.id !== expenseId);
+             }
+             closeModal(); // Close the confirmation modal
+             // If the expense detail modal is still somehow open, close it too.
+             // Typically, the confirmation modal replaces the detail one.
+             // closeModal(); 
+             renderTabContent(); // Re-render the current tab
+        };
+        
+        const openDeleteTripConfirmationModal = (tripId) => {
+             const content = `
+                 <div class="text-center">
+                     <h3 class="text-lg font-medium">Are you sure?</h3>
+                     <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">This will permanently delete the entire trip group and all its expenses. This action cannot be undone.</p>
+                     <div class="mt-6 flex justify-center space-x-4">
+                         <button class="cancel-modal-btn bg-[var(--c-button-secondary-bg-light)] dark:bg-[var(--c-button-secondary-bg-dark)] hover:bg-[var(--c-button-secondary-hover-light)] dark:hover:bg-[var(--c-button-secondary-hover-dark)] font-bold py-2 px-4 rounded-lg">Cancel</button>
+                         <button id="confirm-delete-trip-btn" data-trip-id="${tripId}" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Delete Trip</button>
+                     </div>
+                 </div>`;
+             openModal(content, 'max-w-sm');
+             const confirmBtn = document.getElementById('confirm-delete-trip-btn');
+             if (confirmBtn) confirmBtn.addEventListener('click', (e) => handleDeleteTrip(parseInt(e.currentTarget.dataset.tripId)));
+        };
+
+        const handleDeleteTrip = (tripId) => {
+             mockData.trips = mockData.trips.filter(t => t.id !== tripId);
+             closeModal();
+             showHomePage();
+             renderTripList(); // Update the trip list on the home page
+        };
+        
+        const handleSaveChanges = () => {
+             const trip = mockData.trips.find(t => t.id === currentTripId);
+             if(trip) {
+                 const nameInput = document.getElementById('trip-name-input');
+                 const budgetInput = document.getElementById('trip-budget-input');
+                 if (nameInput) trip.name = nameInput.value || trip.name;
+                 if (budgetInput) trip.budget = parseInt(budgetInput.value) || trip.budget;
+                 
+                 // Update header title immediately if visible
+                 const headerTitle = document.querySelector('#trip-details-page h1');
+                 if (headerTitle) headerTitle.textContent = trip.name;
+
+                 // Optionally show feedback
+                 const saveBtn = document.getElementById('save-settings-btn');
+                 if(saveBtn) {
+                    const originalText = saveBtn.textContent;
+                    saveBtn.textContent = 'Saved!';
+                    saveBtn.classList.add('bg-green-500');
+                    setTimeout(() => {
+                        saveBtn.textContent = originalText;
+                        saveBtn.classList.remove('bg-green-500');
+                        // Navigate to overview tab after saving
+                        activeTab = 'overview'; 
+                        renderTabContent(); 
+                    }, 1500);
+                 } else {
+                     // If button not found (shouldn't happen), just re-render
+                     activeTab = 'overview'; 
+                     renderTabContent(); 
+                 }
+             }
+        };
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Apply initial theme
+            applyTheme(currentTheme);
+
+            // Set up user info
+            const userNameEl = document.getElementById('user-name');
+            const userEmailEl = document.getElementById('user-email');
+            if (userNameEl) userNameEl.textContent = mockData.currentUser.name;
+            if (userEmailEl) userEmailEl.textContent = mockData.currentUser.email;
+            if (userMenuButton) userMenuButton.textContent = mockData.currentUser.initials;
+            
+            // Render initial list
+            renderTripList();
+
+            // Add Event Listeners
+            const tripListContainer = document.getElementById('trip-list-container');
+            if(tripListContainer) tripListContainer.addEventListener('click', (e) => { const card = e.target.closest('[data-trip-id]'); if (card) { activeTab = 'overview'; renderTripDetails(parseInt(card.dataset.tripId)); } });
+            
+            if(userMenuButton) userMenuButton.addEventListener('click', () => userMenu.classList.toggle('hidden'));
+            
+            window.addEventListener('click', (e) => { if (userMenuButton && userMenu && !userMenuButton.contains(e.target) && !userMenu.contains(e.target)) userMenu.classList.add('hidden'); });
+            
+            if(homeLink) homeLink.addEventListener('click', (e) => { e.preventDefault(); showHomePage(); });
+            
+            const heroCreateBtn = document.getElementById('create-trip-btn-hero');
+            if (heroCreateBtn) heroCreateBtn.addEventListener('click', openCreateTripModal);
+           
+            if (themeToggleButton) themeToggleButton.addEventListener('click', toggleTheme);
+            
+        });
+    </script>
+</body>
+</html>
+
